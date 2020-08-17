@@ -7,6 +7,9 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Changed
+- Minor README changes
+
 ## [0.1.0] - 2020-08-17
 
 ### Added

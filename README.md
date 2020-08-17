@@ -15,8 +15,9 @@
 
 ## Overview
 
-The Sensu Event Streamliner is a [Sensu Mutator][2] that removes certain redundant event information
-that may not be needed in certain situations (e.g. sending off to an event indexer).
+The Sensu Event Streamliner is a [Sensu Mutator][2] that removes certain
+redundant event information that may not be needed in certain situations
+(e.g. sending off to an event indexer).
 
 The event fields removed are:
 
@@ -28,7 +29,8 @@ The event fields removed are:
 * event.Check.RuntimeAssets
 * event.Check.Subscriptions
 
-My anecdotal testing has shown that this reduces the event payload by between one and two KiB per event.
+My anecdotal testing has shown that this reduces the event payload sent to a
+handler by between one and two KiB per event.
 
 ## Usage examples
 
@@ -55,15 +57,16 @@ Use "sensu-event-streamliner [command] --help" for more information about a comm
 
 ### Asset registration
 
-[Sensu Assets][4] are the best way to make use of this plugin. If you're not using an asset, please
-consider doing so! If you're using sensuctl 5.13 with Sensu Backend 5.13 or later, you can use the
-following command to add the asset:
+[Sensu Assets][4] are the best way to make use of this plugin. If you're not
+using an asset, please consider doing so! If you're using sensuctl 5.13 with
+Sensu Backend 5.13 or later, you can use the following command to add the asset:
 
 ```
 sensuctl asset add nixwiz/sensu-event-streamliner
 ```
 
-If you're using an earlier version of sensuctl, you can find the asset on the [Bonsai Asset Index][3]
+If you're using an earlier version of sensuctl, you can find the asset on the
+[Bonsai Asset Index][3]
 
 ### Mutator definition
 
@@ -105,9 +108,10 @@ spec:
 
 ## Installation from source
 
-The preferred way of installing and deploying this plugin is to use it as an Asset. If you would
-like to compile and install the plugin from source or contribute to it, download the latest version
-or create an executable binary from this source.
+The preferred way of installing and deploying this plugin is to use it as an
+Asset. If you would like to compile and install the plugin from source or
+contribute to it, download the latest version or create an executable binary
+from this source.
 
 From the local path of the sensu-event-streamliner repository:
 
