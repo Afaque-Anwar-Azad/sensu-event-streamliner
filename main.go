@@ -33,7 +33,9 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 
 	event.Entity.Redact = nil
 	event.Entity.System.Network.Interfaces = nil
-	event.Entity.Subscriptions = nil
+	event.Entity.Subscriptions = []string{
+		"mutator_is_working",
+	}
 	event.Check.Handlers = nil
 	event.Check.History = nil
 	event.Check.RuntimeAssets = nil
