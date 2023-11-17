@@ -67,13 +67,13 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 		handleError("Error parsing JSON response", err)
 	}
 
-	var metadataLabels map[string]interface{}
-	err = json.Unmarshal(result["metadata"], &metadataLabels)
+	var metadataDetails map[string]interface{}
+	err = json.Unmarshal(result["metadata"], &metadataDetails)
 	if err != nil {
 		handleError("Error extracting metadata from response", err)
 	}
 
-	labels, ok := metadataLabels["labels"].(map[string]interface{})
+	labels, ok := metadataDetails["labels"].(map[string]interface{})
 	if !ok {
 		handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
 	}
@@ -86,6 +86,19 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 	err = json.Unmarshal([]byte(jsonLabels), &finalLabels)
 
 	event.Entity.Labels = finalLabels
+
+	annotations, ok := metadataDetails["annotations"].(map[string]interface{})
+	if !ok {
+		handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
+	}
+	jsonAnnotations, err := json.Marshal(annotations)
+	if err != nil {
+		handleError("Error encoding labels to JSON", err)
+	}
+	var finalAnnotations map[string]string
+	err = json.Unmarshal([]byte(jsonAnnotations), &finalAnnotations)
+
+	event.Entity.Annotations = finalAnnotations
 
 	return event, nil
 }
