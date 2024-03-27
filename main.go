@@ -64,21 +64,25 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 	var result map[string]json.RawMessage
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		handleError("Error parsing JSON response", err)
+		fmt.Println("The response body is:", body)
+		handleError("Error parsing JSON response,", err)
 	}
 
 	var metadataDetails map[string]interface{}
 	err = json.Unmarshal(result["metadata"], &metadataDetails)
 	if err != nil {
+		fmt.Println("The complete event details during extraction of metadata from response body:", result)
 		handleError("Error extracting metadata from response", err)
 	}
 
 	labels, ok := metadataDetails["labels"].(map[string]interface{})
 	if !ok {
+		fmt.Println("The complete event details during extraction of labels from metadata:", result)
 		handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
 	}
 	jsonLabels, err := json.Marshal(labels)
 	if err != nil {
+		fmt.Println("The complete event details during marshal of labels:", result)
 		handleError("Error encoding labels to JSON", err)
 	}
 
@@ -89,10 +93,12 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 
 	annotations, ok := metadataDetails["annotations"].(map[string]interface{})
 	if !ok {
-		handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
+		fmt.Println("The complete event details during extraction of annotations from metadata:", result)
+		handleError("Error extracting annotations from metadata", fmt.Errorf("annotations field not found"))
 	}
 	jsonAnnotations, err := json.Marshal(annotations)
 	if err != nil {
+		fmt.Println("The complete event details during marshal of annotations:", result)
 		handleError("Error encoding labels to JSON", err)
 	}
 	var finalAnnotations map[string]string
