@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Config represents the mutator plugin config.
@@ -36,7 +37,6 @@ func checkArgs(_ *types.Event) error {
 
 func handleError(message string, err error) {
 	fmt.Printf("%s: %s\n", message, err)
-	os.Exit(1)
 }
 func executeMutator(event *types.Event) (*types.Event, error) {
 
@@ -75,36 +75,49 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 		handleError("Error extracting metadata from response", err)
 	}
 
-	labels, ok := metadataDetails["labels"].(map[string]interface{})
-	if !ok {
-		fmt.Println("The complete event details during extraction of labels from metadata:", result)
-		handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
+	start := time.Now()
+
+	for time.Since(start) < 5*time.Minute {
+		labels, ok := metadataDetails["labels"].(map[string]interface{})
+		if !ok {
+			fmt.Println("The complete event details during extraction of labels from metadata:", result)
+			handleError("Error extracting labels from metadata", fmt.Errorf("labels field not found"))
+			continue
+		}
+		jsonLabels, err := json.Marshal(labels)
+		if err != nil {
+			fmt.Println("The complete event details during marshal of labels:", result)
+			handleError("Error encoding labels to JSON", err)
+			continue
+		}
+
+		var finalLabels map[string]string
+		err = json.Unmarshal([]byte(jsonLabels), &finalLabels)
+
+		event.Entity.Labels = finalLabels
+
+		annotations, ok := metadataDetails["annotations"].(map[string]interface{})
+		if !ok {
+			fmt.Println("The complete event details during extraction of annotations from metadata:", result)
+			handleError("Error extracting annotations from metadata", fmt.Errorf("annotations field not found"))
+			continue
+		}
+		jsonAnnotations, err := json.Marshal(annotations)
+		if err != nil {
+			fmt.Println("The complete event details during marshal of annotations:", result)
+			handleError("Error encoding labels to JSON", err)
+			continue
+		}
+		var finalAnnotations map[string]string
+		err = json.Unmarshal([]byte(jsonAnnotations), &finalAnnotations)
+
+		event.Entity.Annotations = finalAnnotations
+
+		return event, nil
+
 	}
-	jsonLabels, err := json.Marshal(labels)
-	if err != nil {
-		fmt.Println("The complete event details during marshal of labels:", result)
-		handleError("Error encoding labels to JSON", err)
-	}
-
-	var finalLabels map[string]string
-	err = json.Unmarshal([]byte(jsonLabels), &finalLabels)
-
-	event.Entity.Labels = finalLabels
-
-	annotations, ok := metadataDetails["annotations"].(map[string]interface{})
-	if !ok {
-		fmt.Println("The complete event details during extraction of annotations from metadata:", result)
-		handleError("Error extracting annotations from metadata", fmt.Errorf("annotations field not found"))
-	}
-	jsonAnnotations, err := json.Marshal(annotations)
-	if err != nil {
-		fmt.Println("The complete event details during marshal of annotations:", result)
-		handleError("Error encoding labels to JSON", err)
-	}
-	var finalAnnotations map[string]string
-	err = json.Unmarshal([]byte(jsonAnnotations), &finalAnnotations)
-
-	event.Entity.Annotations = finalAnnotations
-
+	fmt.Println("event mutator execution time exceeded 5 minutes")
+	os.Exit(1)
 	return event, nil
+
 }
