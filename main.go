@@ -41,42 +41,44 @@ func handleError(message string, err error) {
 }
 func executeMutator(event *types.Event) (*types.Event, error) {
 
-	namespace, entityName := "default", event.Entity.Name
-	url := fmt.Sprintf("%s/api/core/v2/namespaces/%s/entities/%s", os.Getenv("SENSU_API_URL"), namespace, entityName)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		handleError("Error creating request", err)
-	}
-	req.Header.Add("Authorization", "Key "+os.Getenv("SENSU_API_KEY"))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		handleError("Error making request", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		handleError("Error reading response body", err)
-	}
-
-	var result map[string]json.RawMessage
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		fmt.Println("The response body is:", body)
-		handleError("Error parsing JSON response,", err)
-	}
-
 	start := time.Now()
 
 	for time.Since(start) < 5*time.Minute {
+
+		namespace, entityName := "default", event.Entity.Name
+		url := fmt.Sprintf("%s/api/core/v2/namespaces/%s/entities/%s", os.Getenv("SENSU_API_URL"), namespace, entityName)
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			handleError("Error creating request", err)
+		}
+		req.Header.Add("Authorization", "Key "+os.Getenv("SENSU_API_KEY"))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			handleError("Error making request", err)
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			handleError("Error reading response body", err)
+		}
+
+		var result map[string]json.RawMessage
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			fmt.Println("The response body is:", body)
+			handleError("Error parsing JSON response,", err)
+		}
+
 		var metadataDetails map[string]interface{}
 		err = json.Unmarshal(result["metadata"], &metadataDetails)
 		if err != nil {
 			fmt.Println("Error extracting metadata from response", err)
 			fmt.Println("The complete event details during extraction of metadata from response body:", result)
+			time.Sleep(15 * time.Second)
 			continue
 		}
 
@@ -84,12 +86,14 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 		if !ok {
 			fmt.Println("Error extracting labels from metadata")
 			fmt.Println("The complete event details during extraction of labels from metadata:", result)
+			time.Sleep(15 * time.Second)
 			continue
 		}
 		jsonLabels, err := json.Marshal(labels)
 		if err != nil {
 			fmt.Println("Error encoding labels to JSON", err)
 			fmt.Println("The complete event details during marshal of labels:", result)
+			time.Sleep(15 * time.Second)
 			continue
 		}
 
@@ -102,12 +106,14 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 		if !ok {
 			fmt.Println("Error extracting annotations from metadata")
 			fmt.Println("The complete event details during extraction of annotations from metadata:", result)
+			time.Sleep(15 * time.Second)
 			continue
 		}
 		jsonAnnotations, err := json.Marshal(annotations)
 		if err != nil {
 			fmt.Println("Error encoding labels to JSON")
 			fmt.Println("The complete event details during marshal of annotations:", result)
+			time.Sleep(15 * time.Second)
 			continue
 		}
 		var finalAnnotations map[string]string
@@ -117,6 +123,6 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 
 		return event, nil
 	}
-	handleError("event mutator execution time exceeded 5 minutes. ", err)
+	handleError("event mutator execution time exceeded 5 minutes. ", nil)
 	return event, nil
 }
