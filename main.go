@@ -76,23 +76,17 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 		var metadataDetails map[string]interface{}
 		err = json.Unmarshal(result["metadata"], &metadataDetails)
 		if err != nil {
-			fmt.Println("Error extracting metadata from response", err)
-			fmt.Println("The complete event details during extraction of metadata from response body:", result)
 			time.Sleep(15 * time.Second)
 			continue
 		}
 
 		labels, ok := metadataDetails["labels"].(map[string]interface{})
 		if !ok {
-			fmt.Println("Error extracting labels from metadata")
-			fmt.Println("The complete event details during extraction of labels from metadata:", result)
 			time.Sleep(15 * time.Second)
 			continue
 		}
 		jsonLabels, err := json.Marshal(labels)
 		if err != nil {
-			fmt.Println("Error encoding labels to JSON", err)
-			fmt.Println("The complete event details during marshal of labels:", result)
 			time.Sleep(15 * time.Second)
 			continue
 		}
@@ -104,15 +98,11 @@ func executeMutator(event *types.Event) (*types.Event, error) {
 
 		annotations, ok := metadataDetails["annotations"].(map[string]interface{})
 		if !ok {
-			fmt.Println("Error extracting annotations from metadata")
-			fmt.Println("The complete event details during extraction of annotations from metadata:", result)
 			time.Sleep(15 * time.Second)
 			continue
 		}
 		jsonAnnotations, err := json.Marshal(annotations)
 		if err != nil {
-			fmt.Println("Error encoding labels to JSON")
-			fmt.Println("The complete event details during marshal of annotations:", result)
 			time.Sleep(15 * time.Second)
 			continue
 		}
